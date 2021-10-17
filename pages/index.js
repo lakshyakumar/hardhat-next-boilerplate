@@ -1,8 +1,30 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import { useState } from 'react';
+import { ethers } from "ethers";
+const HARDHAT_NETWORK_ID = '31337';
 
-export default function Home() {
+
+
+const _connectWallet = async (setAddress) => {
+  const [selectedAddress] = await window.ethereum.enable();
+  setAddress(selectedAddress)
+  window.ethereum.on("accountsChanged", ([newAddress]) => {
+    console.log("connected to ", newAddress)
+    // `accountsChanged` event can be triggered with an undefined newAddress.
+    // This happens when the user removes the Dapp from the "Connected
+    // list of sites allowed access to your addresses" (Metamask > Settings > Connections)
+    // To avoid errors, we reset the dapp state 
+    if (newAddress === undefined) {
+      console.log("not connected")
+    }
+    setAddress(selectedAddress)
+  });
+}
+
+export default function Home({ data }) {
+  const [address, setAddress] = useState(null)
   return (
     <div className={styles.container}>
       <Head>
@@ -13,43 +35,15 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Welcome to connect wallet
         </h1>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+        <button onClick={() => { _connectWallet(setAddress) }}>
+          Connect wallet
+        </button>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+        {address}
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
       </main>
 
       <footer className={styles.footer}>
@@ -66,4 +60,19 @@ export default function Home() {
       </footer>
     </div>
   )
+}
+
+export async function getStaticProps() {
+
+
+
+  return {
+    props: {
+      data: [
+        {
+          title: "cool stuff"
+        }
+      ]
+    }, // will be passed to the page component as props
+  }
 }
